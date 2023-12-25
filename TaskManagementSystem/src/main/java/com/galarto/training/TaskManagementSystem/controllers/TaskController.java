@@ -1,50 +1,58 @@
 package com.galarto.training.TaskManagementSystem.controllers;
 
 import com.galarto.training.TaskManagementSystem.models.Task;
-import com.galarto.training.TaskManagementSystem.repositories.TaskRepository;
+
+import com.galarto.training.TaskManagementSystem.models.User;
+import com.galarto.training.TaskManagementSystem.services.TaskService;
+import com.galarto.training.TaskManagementSystem.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
 public class TaskController {
     @Autowired
-    private TaskRepository taskRepo;
+    private TaskService taskService;
 
-    @PostMapping("/addtask")
-    public String addTask(@RequestParam(name = "id") String id,
-            @RequestParam(name = "title") String title,
-            @RequestParam(name = "description") String description,
-            @RequestParam(name = "priority") String priority,
-            @RequestParam(name = "author") String author) {
-        taskRepo.save(new Task(Integer.parseInt(id), title, description, Task.Status.WAITING,
-                Task.Priority.valueOf(priority), author));
-        return "redirect:/";
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/task/{id}")
+    public void addTask(@RequestBody Task task,
+                        @PathVariable(name = "id") int userId) {
+
+        userService.getUser(userId);
+        System.out.println(task);
+        task.setContractor(userService.findUserByEmail(task.getContractor().getEmail()));
+        task.setAuthor(userService.findUserByEmail(task.getAuthor().getEmail()));
+        taskService.addTask(task);
     }
 
-    @GetMapping("/findtask")
-    public String findTask(@RequestParam(name = "id") String id) {
-        System.out.println(taskRepo.findById(Long.valueOf(id)));
-        return "redirect:/";
+    @PutMapping("/tasks")
+    public Task updateTask(@RequestBody Task task) {
+
+        taskService.updateTask(task);
+        return task;
     }
 
-    @DeleteMapping("/deletetask")
-    public String deleteTask(@RequestParam(name = "id") long id) {
-        taskRepo.deleteById(id);
-        return "redirect:/";
+    @GetMapping("/tasks/{id}")
+    public Task findTask(@PathVariable int id) {
+        Task task = taskService.getTask(id);
+
+        return task;
     }
 
-    @PutMapping("/update")
-    public String updateTask(@RequestParam(name = "id") int id,
-                             @RequestParam(name = "title") String title,
-                             @RequestParam(name = "description") String description,
-                             @RequestParam(name = "status") String status,
-                             @RequestParam(name = "priority") String priority,
-                             @RequestParam(name = "author") String author,
-                             @RequestParam(name = "contractor") String contractor) {
-        Task task = new Task(id, title, description, Task.Status.valueOf(status), Task.Priority.valueOf(priority),
-                            author, contractor);
-        taskRepo.save(task);
-        return "redirect:/";
+    @GetMapping("/tasks")
+    public List<Task> getAllTasks() {
+        List<Task> tasks = taskService.getAllTasks();
+
+        return tasks;
+    }
+
+    @DeleteMapping("/tasks/{id}")
+    public void deleteTask(@PathVariable int id) {
+        taskService.deleteTask(id);
     }
 }

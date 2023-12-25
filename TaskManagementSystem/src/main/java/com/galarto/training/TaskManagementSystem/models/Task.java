@@ -1,6 +1,9 @@
 package com.galarto.training.TaskManagementSystem.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,36 +19,47 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @NotNull
     private int id;
 
     @Column
+    @NotNull
+    @Size(min = 1, message = "Напишите название задачи")
     private String title;
 
     @Column
+    @NotNull
+    @Size(min = 1, message = "Напишите описание задачи")
     private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "varchar(12)")
+    @NotNull
     private Status status;
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "varchar(7)")
+    @NotNull
     private Priority priority;
 
-    @Column
-    private String author;
 
-    @Column
-    private String contractor;
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    @NotNull
+    private User author;
 
-    public Task(int id, String title, String description, Status status, Priority priority, String author) {
+    @ManyToOne
+    @JoinColumn(name = "contractor_id")
+    private User contractor;
+
+    public Task(int id, String title, String description, Status status, Priority priority, User author) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.priority = priority;
         this.author = author;
-        this.contractor = "";
+        this.contractor = new User();
     }
 
     public enum Status {
