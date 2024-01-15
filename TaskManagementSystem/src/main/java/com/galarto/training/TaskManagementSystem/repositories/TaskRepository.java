@@ -10,14 +10,4 @@ import java.util.Optional;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Integer> {
 
-    Task save(Task task);
-
-    Optional<Task> findById(Long id);
-
-    List<Task> findAll();
-
-    void delete(Task task);
-    void deleteById(Long aLong);
-
-    void flush();
 }

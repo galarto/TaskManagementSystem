@@ -1,5 +1,8 @@
 package com.galarto.training.TaskManagementSystem.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +22,6 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private int id;
 
     @Column
@@ -44,11 +46,13 @@ public class Task {
 
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "author_id")
     @NotNull
     private User author;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "contractor_id")
     private User contractor;
 

@@ -13,21 +13,22 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public void addUser(User user) {
-        userRepository.save(user);
-    }
-
-    public void updateUser(User user) {
-        userRepository.saveAndFlush(user);
-    }
-
-    public User getUser(int id) {
-        User user = null;
-        Optional<User> optional = userRepository.findById(id);
-        if(optional.isPresent()) {
-            user = optional.get();
+    public User saveUser(User user) {
+        User savedUser = userRepository.save(user);
+        if (savedUser != null) {
+            return savedUser;
         }
-        return user;
+
+        return null;
+    }
+
+    public User findUserById(int id) {
+
+        if (userRepository.existsById(id)) {
+            return userRepository.findById(id).get();
+        }
+
+        return null;
     }
 
     public User findUserByEmail(String email) {

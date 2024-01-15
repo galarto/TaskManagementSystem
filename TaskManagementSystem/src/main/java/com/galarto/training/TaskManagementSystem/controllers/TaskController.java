@@ -2,14 +2,17 @@ package com.galarto.training.TaskManagementSystem.controllers;
 
 import com.galarto.training.TaskManagementSystem.models.Task;
 
-import com.galarto.training.TaskManagementSystem.models.User;
+
 import com.galarto.training.TaskManagementSystem.services.TaskService;
 import com.galarto.training.TaskManagementSystem.services.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class TaskController {
@@ -19,40 +22,49 @@ public class TaskController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/task/{id}")
-    public void addTask(@RequestBody Task task,
-                        @PathVariable(name = "id") int userId) {
+    @PostMapping("/task")
+    public ResponseEntity<Task> addTask(@RequestBody Task task) {
 
-        userService.getUser(userId);
-        System.out.println(task);
-        task.setContractor(userService.findUserByEmail(task.getContractor().getEmail()));
-        task.setAuthor(userService.findUserByEmail(task.getAuthor().getEmail()));
-        taskService.addTask(task);
+        Task savedTask = taskService.saveTask(task);
+        if(savedTask != null) {
+            log.info("Сохранена таска с id{}" + task.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping("/tasks")
-    public Task updateTask(@RequestBody Task task) {
-
-        taskService.updateTask(task);
-        return task;
+    @PutMapping("/task")
+    public ResponseEntity<Task> updateTask(@RequestBody Task task) {
+        Task savedTask = taskService.saveTask(task);
+        if(savedTask != null) {
+            log.info("Обновлена таска с id{}" + task.getId());
+            return ResponseEntity.ok(savedTask);
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/tasks/{id}")
-    public Task findTask(@PathVariable int id) {
-        Task task = taskService.getTask(id);
+    public ResponseEntity<Task> findTask(@PathVariable int id) {
 
-        return task;
+        Task task = taskService.getTask(id);
+        return ResponseEntity.ok(task);
     }
 
-    @GetMapping("/tasks")
-    public List<Task> getAllTasks() {
-        List<Task> tasks = taskService.getAllTasks();
+    @GetMapping("/tasks/{pagesize}/{offset}")
+    public ResponseEntity<List<Task>> getAllTasks(@PathVariable int pageSize, @PathVariable int offset) {
 
-        return tasks;
+        List<Task> tasks = taskService.getAllTasks(offset, pageSize);
+        return ResponseEntity.ok(tasks);
     }
 
     @DeleteMapping("/tasks/{id}")
-    public void deleteTask(@PathVariable int id) {
-        taskService.deleteTask(id);
+    public ResponseEntity<Task> deleteTask(@PathVariable int id) {
+
+        var isRemoved = taskService.deleteTask(id);
+        if(!isRemoved) {
+            return ResponseEntity.notFound().build();
+        }
+        log.info("Удалена таска с id{}" + id);
+        return ResponseEntity.noContent().build();
     }
 }

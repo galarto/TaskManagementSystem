@@ -1,5 +1,6 @@
 package com.galarto.training.TaskManagementSystem.models;
 
+import com.galarto.training.TaskManagementSystem.domain.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,8 +21,16 @@ public class User {
     private int id;
 
     @Column
+    private String login;
+
+    @Column
+    private String password;
+
+    @Column
     @NotNull
     private String email;
+
+    private Set<Role> roles;
 
     @OneToMany(mappedBy = "contractor")
     private List<Task> contractorTasks;

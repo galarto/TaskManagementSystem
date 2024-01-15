@@ -2,39 +2,49 @@ package com.galarto.training.TaskManagementSystem.services;
 
 import com.galarto.training.TaskManagementSystem.models.Task;
 import com.galarto.training.TaskManagementSystem.repositories.TaskRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 public class TaskService {
     @Autowired
     private TaskRepository taskRepository;
 
-    public void addTask(Task task) {
-        taskRepository.save(task);
-    }
+    public Task saveTask(Task task) {
+        Task savedTask = taskRepository.save(task);
+        if (savedTask != null) {
+            return savedTask;
+        }
 
-    public void updateTask(Task task) {
-        taskRepository.saveAndFlush(task);
+        return null;
     }
 
     public Task getTask(int id) {
-        Task task = null;
-        Optional<Task> optional = taskRepository.findById(id);
-        if(optional.isPresent()) {
-            task = optional.get();
+
+        if (taskRepository.existsById(id)) {
+            return taskRepository.findById(id).get();
         }
-        return task;
+
+        return null;
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<Task> getAllTasks(int offset, int pageSize) {
+
+        return taskRepository.findAll(PageRequest.of(offset, pageSize)).getContent();
     }
 
-    public void deleteTask(int id) {
-        taskRepository.deleteById(id);
+    public boolean deleteTask(int id) {
+        try {
+            taskRepository.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
     }
 }
